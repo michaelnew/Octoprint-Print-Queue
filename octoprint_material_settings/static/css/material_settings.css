@@ -1,0 +1,50 @@
+.material-form-horizontal .control-group {
+  margin-bottom: 20px;
+  *zoom: 1;
+}
+
+.material-form-horizontal .control-group:before,
+.material-form-horizontal .control-group:after {
+  display: table;
+  line-height: 0;
+  content: "";
+}
+
+.material-form-horizontal .control-group:after {
+  clear: both;
+}
+
+.material-form-horizontal .control-label {
+  float: left;
+  width: 160px;
+  padding-top: 55px;
+  text-align: right;
+}
+
+.material-form-horizontal .controls {
+  *display: inline-block;
+  *padding-left: 60px;
+  margin-left: 180px;
+  *margin-left: 0;
+}
+
+.material-form-horizontal .controls:first-child {
+  *padding-left: 180px;
+}
+
+.material-form-horizontal .help-block {
+  margin-bottom: 0;
+}
+
+.material-form-horizontal input + .help-block,
+.material-form-horizontal select + .help-block,
+.material-form-horizontal textarea + .help-block,
+.material-form-horizontal .uneditable-input + .help-block,
+.material-form-horizontal .input-prepend + .help-block,
+.material-form-horizontal .input-append + .help-block {
+  margin-top: 10px;
+}
+
+.material-form-horizontal .form-actions {
+  padding-left: 180px;
+}
