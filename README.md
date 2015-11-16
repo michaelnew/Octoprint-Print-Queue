@@ -1,6 +1,8 @@
 # OctoPrint-Material-Settings
 
-This plugin will look for specific heating commands sent to the printer (M104, M109, M190, and M140) and replace them with values that you've set from within Octoprint. This way you can change your bed and print temperatures without ever having to reslice.
+This plugin allows you to change your bed and print temperatures from within Octoprint without having to reslice.
+
+It will look for specific heating commands sent to the printer (M104, M109, M190, and M140) and replace them with values that you've set from within Octoprint.
 
 ## Setup
 
@@ -15,8 +17,8 @@ If you want a "heat the bed" command to be overridden, it should be set to exacl
 
 So, for example, if your GCode has this at the beginning:
 
-M140 S50.500
-M109 S200.500
+    M140 S50.500
+    M109 S200.500
 
 And under Settings->Material Settings in Octprint you've set the bed temp to be 62 and the print temp to be 205 (say you're printing PLA), then as those commands are sent to the printer they will become M140 S62 and M109 S205. You could then switch to ABS and change the bed temp to 100 and the print temp to 240 and print the obejct again without ever having to reslice.
 
