@@ -22,10 +22,10 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
             dict(type="settings", custom_bindings=False),
         ]
 
-    # def get_assets(self):
-    #  	return dict(
-    #      	js=["js/material_settings.js"]
-    # )
+    def get_assets(self):
+     	return dict(
+         	js=["js/material_settings.js"]
+    )
 
     def set_bed_temp(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
     	if cmd and cmd[:10] == "M190 S50.5":
