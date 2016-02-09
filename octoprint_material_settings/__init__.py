@@ -8,13 +8,15 @@ import os
 class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
     octoprint.plugin.TemplatePlugin,
     octoprint.plugin.SettingsPlugin,
-    octoprint.plugin.AssetPlugin):
+    octoprint.plugin.AssetPlugin,
+    octoprint.plugin.SimpleApiPlugin):
 
     def on_after_startup(self):
         self._materials_file_path = os.path.join(self.get_plugin_data_folder(), "materials.yaml")
         materials = self._getMaterialsDict()
+        materials["foo"] = "bar"
         self._writeMaterialsFile(materials)
-        self._logger.info("MSL: logging test")
+        self._logger.info("MSL: materials file: %s" % materials["foo"])
 
     def _writeMaterialsFile(self, materials):
         try:
@@ -22,7 +24,6 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
             from octoprint.util import atomic_write
             with atomic_write(self._materials_file_path) as f:
                 yaml.safe_dump(materials, stream=f, default_flow_style=False, indent="  ", allow_unicode=True)
-
         except:
             self._logger.info("MSL: error writing materials file")
 
@@ -39,6 +40,10 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
                         materials_dict = dict()
                     return materials_dict
         return dict()
+
+    def on_api_get(self, request):
+        materials = self._getMaterialsDict()
+        return flask.jsonify(materials)
 
     def get_settings_defaults(self):
         return dict(bed_temp="50",

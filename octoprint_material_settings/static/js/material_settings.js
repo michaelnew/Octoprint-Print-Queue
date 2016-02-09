@@ -13,6 +13,23 @@ $(function() {
         // TESTING
         // self.testBedTemp = "222";
         self.testBedTemp = ko.observable();
+
+
+        self.requestData = function() {
+            $.ajax({
+                url: "plugin/material_settings",
+                type: "GET",
+                dataType: "json",
+                success: self.fromResponse
+            });
+        };
+
+        self.fromResponse = function(data) {
+            console.log('Callback - data: ' + data);
+        };
+
+
+
         // TESTING
 
         // this will hold the URL currently displayed by the iframe
