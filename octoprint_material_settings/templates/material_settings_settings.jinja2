@@ -1,6 +1,6 @@
-<!-- <form class="form-horizontal">
-    <div class="control-group" title="{{ _('This value will override any bed temperature command (M190 and M140) sent to the printer with the value 50.5') }}">
-        <label class="control-label">{{ _('Bed Temperature') }}</label>
+<form class="form-horizontal">
+    <div class="control-group" title="{{ _('Any bed temperature command (M190 and M140) set to this value will be overridden') }}">
+        <label class="control-label">{{ _('Bed Key Temperature') }}</label>
         <div class="controls">
             <div class="input-append">
                 <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settings.plugins.material_settings.bed_temp"> 
@@ -8,8 +8,9 @@
             </div>
         </div>
     </div>
-    <div class="control-group" title="{{ _('Interval in which to poll for the SD printing status information from the printer while printing') }}">
-        <label class="control-label">{{ _('Print Temperature') }}</label>
+
+    <div class="control-group" title="{{ _('Any print temperature command (M104 and M109) set to this value will be overridden') }}">
+        <label class="control-label">{{ _('Print Key Temperature') }}</label>
         <div class="controls">
             <div class="input-append">
                 <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settings.plugins.material_settings.print_temp">
@@ -17,4 +18,4 @@
             </div>
         </div>
     </div>
-</form> -->
+</form>

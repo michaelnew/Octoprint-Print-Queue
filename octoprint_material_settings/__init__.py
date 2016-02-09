@@ -9,41 +9,14 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
     octoprint.plugin.TemplatePlugin,
     octoprint.plugin.SettingsPlugin,
     octoprint.plugin.AssetPlugin,
-    # octoprint.plugin.SimpleApiPlugin,
     octoprint.plugin.BlueprintPlugin):
 
 # StartupPlugin
     def on_after_startup(self):
         self._materials_file_path = os.path.join(self.get_plugin_data_folder(), "materials.yaml")
-        # materials = self._getMaterialsDict()
-        # materials["foo"] = "bar"
-        # self._writeMaterialsFile(materials)
-        # self._logger.info("MSL: materials file: %s" % materials["foo"])
+        self._materials_dict = None
 
-# SimpleApiPlugin
-    # def on_api_get(self, request):
-    #     self._logger.info("MSL: get request was made")
-    #     materials = self._getMaterialsDict()
-    #     return flask.jsonify(materials)
-
-    # def get_api_commands(self):
-    #     return dict(
-    #         command1=[],
-    #         command2=["some_parameter"]
-    #     )
-
-    # def on_api_command(self, command, data):
-    #     import flask
-    #     self._logger.info("MSL: set_material called")
-    #     if command == "command1":
-    #         parameter = "unset"
-    #         if "parameter" in data:
-    #             parameter = "set"
-    #         self._logger.info("command1 called, parameter is {parameter}".format(**locals()))
-    #     elif command == "command2":
-    #         self._logger.info("command2 called, some_parameter is {some_parameter}".format(**data))
-
-
+# BluePrintPlugin (api requests)
     @octoprint.plugin.BlueprintPlugin.route("/materialget", methods=["GET"])
     def getMaterialsData(self):
         for x in flask.request.values:
@@ -58,7 +31,7 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
         materials["bed_temp"] = flask.request.values["bed_temp"];
         materials["print_temp"] = flask.request.values["print_temp"];
         self._writeMaterialsFile(materials)
-        
+
         for x in flask.request.values:
             self._logger.info("MSL: post request value: %s" % x)
         return flask.make_response("POST successful", 200)
@@ -94,40 +67,56 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
                 yaml.safe_dump(materials, stream=f, default_flow_style=False, indent="  ", allow_unicode=True)
         except:
             self._logger.info("MSL: error writing materials file")
+        else:
+            self._materials_dict = materials
+            self.logMaterials()
 
     def _getMaterialsDict(self):
+        result_dict = None
         if os.path.exists(self._materials_file_path):
             with open(self._materials_file_path, "r") as f:
                 try:
                     import yaml
-                    materials_dict = yaml.safe_load(f)
+                    result_dict = yaml.safe_load(f)
                 except:
                     self._logger.info("MSL: error loading materials file")
                 else:
-                    if not materials_dict:
-                        materials_dict = dict()
-                    return materials_dict
-        return dict()
+                    if not result_dict:
+                        result_dict = dict()
+        else: 
+            result_dict = dict()
+        self._materials_dict = result_dict
+        self.logMaterials()
+        return result_dict
+
+    def logMaterials(self): 
+        bTemp = self._materials_dict["bed_temp"]
+        pTemp = self._materials_dict["print_temp"]
+        self._logger.info("MSL: current print temp setting: %s" % pTemp)
+        self._logger.info("MSL: current bed temp setting: %s" % bTemp)
 
 # Gcode replacement
     def set_bed_temp(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
-    	if cmd and cmd[:10] == "M190 S50.5":
-            t = self._settings.get(["bed_temp"])
+        pTempKey = self._settings.get(["bed_temp"])
+        bTempKey = self._settings.get(["print_temp"])
+
+    	if cmd and cmd[:10] == "M190 S" + bTempKey:
+            t = self._materials_dict.get(["bed_temp"])
             if t and t != "":
                 cmd = "M190 S" + t
                 return cmd
-    	if cmd and cmd[:10] == "M140 S50.5":
-            t = self._settings.get(["bed_temp"])
+    	if cmd and cmd[:10] == "M140 S" + bTempKey:
+            t = self._materials_dict.get(["bed_temp"])
             if t and t != "":
                 cmd = "M140 S" + t
                 return cmd
-    	if cmd and cmd[:11] == "M104 S200.5":
-            t = self._settings.get(["print_temp"])
+    	if cmd and cmd[:11] == "M104 S" + pTempKey:
+            t = self._materials_dict.get(["print_temp"])
             if t and t != "":
                 cmd = "M104 S" + t
                 return cmd
-    	if cmd and cmd[:11] == "M109 S200.5":
-            t = self._settings.get(["print_temp"])
+    	if cmd and cmd[:11] == "M109 S" + pTempKey:
+            t = self._materials_dict.get(["print_temp"])
             if t and t != "":
                 cmd = "M109 S" + t
                 return cmd
