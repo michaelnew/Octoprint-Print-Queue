@@ -2,11 +2,43 @@
 from __future__ import absolute_import
 
 import octoprint.plugin
+import flask
+import os
 
 class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
     octoprint.plugin.TemplatePlugin,
     octoprint.plugin.SettingsPlugin,
     octoprint.plugin.AssetPlugin):
+
+    def on_after_startup(self):
+        self._materials_file_path = os.path.join(self.get_plugin_data_folder(), "materials.yaml")
+        materials = self._getMaterialsDict()
+        self._writeMaterialsFile(materials)
+        self._logger.info("MSL: logging test")
+
+    def _writeMaterialsFile(self, materials):
+        try:
+            import yaml
+            from octoprint.util import atomic_write
+            with atomic_write(self._materials_file_path) as f:
+                yaml.safe_dump(materials, stream=f, default_flow_style=False, indent="  ", allow_unicode=True)
+
+        except:
+            self._logger.info("MSL: error writing materials file")
+
+    def _getMaterialsDict(self):
+        if os.path.exists(self._materials_file_path):
+            with open(self._materials_file_path, "r") as f:
+                try:
+                    import yaml
+                    materials_dict = yaml.safe_load(f)
+                except:
+                    self._logger.info("MSL: error loading materials file")
+                else:
+                    if not materials_dict:
+                        materials_dict = dict()
+                    return materials_dict
+        return dict()
 
     def get_settings_defaults(self):
         return dict(bed_temp="50",

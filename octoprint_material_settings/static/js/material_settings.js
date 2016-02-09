@@ -10,7 +10,10 @@ $(function() {
 
         self.settings = parameters[0];
 
-        self.testBedTemp = "222";
+        // TESTING
+        // self.testBedTemp = "222";
+        self.testBedTemp = ko.observable();
+        // TESTING
 
         // this will hold the URL currently displayed by the iframe
         // self.currentUrl = ko.observable();
@@ -28,9 +31,11 @@ $(function() {
         // dependencies have already been initialized. It is especially guaranteed that this method
         // gets called _after_ the settings have been retrieved from the OctoPrint backend and thus
         // the SettingsViewModel been properly populated.
+
         // self.onBeforeBinding = function() {
-        //     self.newUrl(self.settings.settings.plugins.helloworld.url());
-        //     self.goToUrl();
+        //     // self.newUrl(self.settings.settings.plugins.helloworld.url());
+        //     // self.goToUrl();
+        //     self.testBedTemp = ko.observable(self.settings.settings.plugins.material_settings.bed_temp());
         // }
     }
 
