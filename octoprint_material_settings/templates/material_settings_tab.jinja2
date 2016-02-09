@@ -1,4 +1,5 @@
 <form class="form-horizontal">
+    <h1>{{ _('Material Settings') }}</h1>
     <div class="control-group" title="{{ _('This value will override any bed temperature command (M190 and M140) sent to the printer with the value 50.5') }}">
         <label class="control-label">{{ _('Bed Temperature') }}</label>
         <div class="controls">
@@ -18,5 +19,8 @@
                 <button class="btn btn-primary" data-bind="click: postData">{{ _('post') }}</button>
             </div>
         </div>
+    </div>
+    <div>
+        <button class="btn" data-bind="click: updateMaterial">{{ _('Update') }}</button>
     </div>
 </form>

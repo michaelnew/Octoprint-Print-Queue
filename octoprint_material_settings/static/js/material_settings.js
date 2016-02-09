@@ -9,9 +9,6 @@ $(function() {
         var self = this;
 
         self.settings = parameters[0];
-
-        // TESTING
-        // self.testBedTemp = "222";
         self.bedTemp = ko.observable();
         self.printTemp = ko.observable();
 
@@ -24,7 +21,7 @@ $(function() {
             });
         };
 
-        self.postData = function() {
+        self.postData = function(bTemp, pTemp) {
             $.ajax({
                 url: "plugin/material_settings/materialset", 
                 type: "POST",
@@ -33,8 +30,8 @@ $(function() {
                     "X-Api-Key":UI_API_KEY,
                 },
                 data: {
-                        bed_temp: "123",
-                        print_temp: "213"},
+                        bed_temp: bTemp,
+                        print_temp: pTemp},
                 success: self.postResponse
             });
             // $.post("api/plugin/material_settings", {bed_temp: "123", print_temp: "213"}, function(result){
@@ -52,6 +49,11 @@ $(function() {
             self.printTemp(data["print_temp"]);
             console.log('Callback - data: ' + data);
         };
+
+
+        self.updateMaterial = function() {
+            self.postData(self.bedTemp, self.printTemp);
+        }
         // TESTING
 
         // this will hold the URL currently displayed by the iframe

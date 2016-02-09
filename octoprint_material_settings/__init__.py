@@ -54,6 +54,11 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/materialset", methods=["POST"])
     def setMaterialsData(self):
+        materials = self._getMaterialsDict()
+        materials["bed_temp"] = flask.request.values["bed_temp"];
+        materials["print_temp"] = flask.request.values["print_temp"];
+        self._writeMaterialsFile(materials)
+        
         for x in flask.request.values:
             self._logger.info("MSL: post request value: %s" % x)
         return flask.make_response("POST successful", 200)
