@@ -15,6 +15,7 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
     def on_after_startup(self):
         self._materials_file_path = os.path.join(self.get_plugin_data_folder(), "materials.yaml")
         self._materials_dict = None
+        self._getMaterialsDict()
 
 # BluePrintPlugin (api requests)
     @octoprint.plugin.BlueprintPlugin.route("/materialget", methods=["GET"])
@@ -97,26 +98,29 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
 
 # Gcode replacement
     def set_bed_temp(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
-        pTempKey = self._settings.get(["bed_temp"])
-        bTempKey = self._settings.get(["print_temp"])
+        bTempKey = self._settings.get(["bed_temp"])
+        pTempKey = self._settings.get(["print_temp"])
 
-    	if cmd and cmd[:10] == "M190 S" + bTempKey:
-            t = self._materials_dict.get(["bed_temp"])
+        self._logger.info("MSL: gcode: %s" % cmd[:8])
+        self._logger.info("MSL: swap string:" + "M190 S" + bTempKey)
+
+    	if cmd and cmd[:8] == ("M190 S" + bTempKey):
+            t = self._materials_dict["bed_temp"]
             if t and t != "":
                 cmd = "M190 S" + t
                 return cmd
-    	if cmd and cmd[:10] == "M140 S" + bTempKey:
-            t = self._materials_dict.get(["bed_temp"])
+    	if cmd and cmd[:8] == ("M140 S" + bTempKey):
+            t = self._materials_dict["bed_temp"]
             if t and t != "":
                 cmd = "M140 S" + t
                 return cmd
-    	if cmd and cmd[:11] == "M104 S" + pTempKey:
-            t = self._materials_dict.get(["print_temp"])
+    	if cmd and cmd[:9] == ("M104 S" + pTempKey):
+            t = self._materials_dict["print_temp"]
             if t and t != "":
                 cmd = "M104 S" + t
                 return cmd
-    	if cmd and cmd[:11] == "M109 S" + pTempKey:
-            t = self._materials_dict.get(["print_temp"])
+    	if cmd and cmd[:9] == ("M109 S" + pTempKey):
+            t = self._materials_dict["print_temp"]
             if t and t != "":
                 cmd = "M109 S" + t
                 return cmd
