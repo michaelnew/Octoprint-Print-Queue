@@ -20,9 +20,6 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
 # BluePrintPlugin (api requests)
     @octoprint.plugin.BlueprintPlugin.route("/materialget", methods=["GET"])
     def getMaterialsData(self):
-        for x in flask.request.values:
-            self._logger.info("MSL: get request value: %s" % x)
-
         materials = self._getMaterialsDict()
         return flask.jsonify(materials)
 
@@ -32,9 +29,6 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
         materials["bed_temp"] = flask.request.values["bed_temp"];
         materials["print_temp"] = flask.request.values["print_temp"];
         self._writeMaterialsFile(materials)
-
-        for x in flask.request.values:
-            self._logger.info("MSL: post request value: %s" % x)
         return flask.make_response("POST successful", 200)
 
 # SettingsPlugin
@@ -70,7 +64,6 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
             self._logger.info("MSL: error writing materials file")
         else:
             self._materials_dict = materials
-            self.logMaterials()
 
     def _getMaterialsDict(self):
         result_dict = None
@@ -87,22 +80,12 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
         else: 
             result_dict = dict()
         self._materials_dict = result_dict
-        self.logMaterials()
         return result_dict
-
-    def logMaterials(self): 
-        bTemp = self._materials_dict["bed_temp"]
-        pTemp = self._materials_dict["print_temp"]
-        self._logger.info("MSL: current print temp setting: %s" % pTemp)
-        self._logger.info("MSL: current bed temp setting: %s" % bTemp)
 
 # Gcode replacement
     def set_bed_temp(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         bTempKey = self._settings.get(["bed_temp"])
         pTempKey = self._settings.get(["print_temp"])
-
-        self._logger.info("MSL: gcode: %s" % cmd[:8])
-        self._logger.info("MSL: swap string:" + "M190 S" + bTempKey)
 
     	if cmd and cmd[:8] == ("M190 S" + bTempKey):
             t = self._materials_dict["bed_temp"]
