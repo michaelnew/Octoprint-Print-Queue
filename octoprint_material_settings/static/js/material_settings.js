@@ -12,7 +12,8 @@ $(function() {
 
         // TESTING
         // self.testBedTemp = "222";
-        self.testBedTemp = ko.observable();
+        self.bedTemp = ko.observable();
+        self.printTemp = ko.observable();
 
         self.requestData = function() {
             $.ajax({
@@ -47,8 +48,9 @@ $(function() {
 
 
         self.fromResponse = function(data) {
+            self.bedTemp(data["bed_temp"]);
+            self.printTemp(data["print_temp"]);
             console.log('Callback - data: ' + data);
-            console.log('Callback - data: ' + data["foo"]);
         };
         // TESTING
 
@@ -69,11 +71,12 @@ $(function() {
         // gets called _after_ the settings have been retrieved from the OctoPrint backend and thus
         // the SettingsViewModel been properly populated.
 
-        // self.onBeforeBinding = function() {
-        //     // self.newUrl(self.settings.settings.plugins.helloworld.url());
-        //     // self.goToUrl();
-        //     self.testBedTemp = ko.observable(self.settings.settings.plugins.material_settings.bed_temp());
-        // }
+        self.onBeforeBinding = function() {
+            // self.newUrl(self.settings.settings.plugins.helloworld.url());
+            // self.goToUrl();
+            self.requestData();
+            // self.testBedTemp = ko.observable(self.settings.settings.plugins.material_settings.bed_temp());
+        }
     }
 
     // This is how our plugin registers itself with the application, by adding some configuration
