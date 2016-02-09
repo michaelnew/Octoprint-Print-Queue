@@ -14,22 +14,42 @@ $(function() {
         // self.testBedTemp = "222";
         self.testBedTemp = ko.observable();
 
-
         self.requestData = function() {
             $.ajax({
-                url: "plugin/material_settings",
+                url: "plugin/material_settings/materialget",
                 type: "GET",
                 dataType: "json",
                 success: self.fromResponse
             });
         };
 
-        self.fromResponse = function(data) {
-            console.log('Callback - data: ' + data);
+        self.postData = function() {
+            $.ajax({
+                url: "plugin/material_settings/materialset", 
+                type: "POST",
+                dataType: "json",
+                headers: {
+                    "X-Api-Key":UI_API_KEY,
+                },
+                data: {
+                        bed_temp: "123",
+                        print_temp: "213"},
+                success: self.postResponse
+            });
+            // $.post("api/plugin/material_settings", {bed_temp: "123", print_temp: "213"}, function(result){
+            //     self.postResponse
+            // });
+        }
+
+        self.postResponse = function() {
+            console.log('MSL: post success');
         };
 
 
-
+        self.fromResponse = function(data) {
+            console.log('Callback - data: ' + data);
+            console.log('Callback - data: ' + data["foo"]);
+        };
         // TESTING
 
         // this will hold the URL currently displayed by the iframe

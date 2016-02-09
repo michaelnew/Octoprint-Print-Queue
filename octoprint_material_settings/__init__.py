@@ -9,15 +9,78 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
     octoprint.plugin.TemplatePlugin,
     octoprint.plugin.SettingsPlugin,
     octoprint.plugin.AssetPlugin,
-    octoprint.plugin.SimpleApiPlugin):
+    # octoprint.plugin.SimpleApiPlugin,
+    octoprint.plugin.BlueprintPlugin):
 
+# StartupPlugin
     def on_after_startup(self):
         self._materials_file_path = os.path.join(self.get_plugin_data_folder(), "materials.yaml")
-        materials = self._getMaterialsDict()
-        materials["foo"] = "bar"
-        self._writeMaterialsFile(materials)
-        self._logger.info("MSL: materials file: %s" % materials["foo"])
+        # materials = self._getMaterialsDict()
+        # materials["foo"] = "bar"
+        # self._writeMaterialsFile(materials)
+        # self._logger.info("MSL: materials file: %s" % materials["foo"])
 
+# SimpleApiPlugin
+    # def on_api_get(self, request):
+    #     self._logger.info("MSL: get request was made")
+    #     materials = self._getMaterialsDict()
+    #     return flask.jsonify(materials)
+
+    # def get_api_commands(self):
+    #     return dict(
+    #         command1=[],
+    #         command2=["some_parameter"]
+    #     )
+
+    # def on_api_command(self, command, data):
+    #     import flask
+    #     self._logger.info("MSL: set_material called")
+    #     if command == "command1":
+    #         parameter = "unset"
+    #         if "parameter" in data:
+    #             parameter = "set"
+    #         self._logger.info("command1 called, parameter is {parameter}".format(**locals()))
+    #     elif command == "command2":
+    #         self._logger.info("command2 called, some_parameter is {some_parameter}".format(**data))
+
+
+    @octoprint.plugin.BlueprintPlugin.route("/materialget", methods=["GET"])
+    def getMaterialsData(self):
+        for x in flask.request.values:
+            self._logger.info("MSL: get request value: %s" % x)
+
+        materials = self._getMaterialsDict()
+        return flask.jsonify(materials)
+
+    @octoprint.plugin.BlueprintPlugin.route("/materialset", methods=["POST"])
+    def setMaterialsData(self):
+        for x in flask.request.values:
+            self._logger.info("MSL: post request value: %s" % x)
+        return flask.make_response("POST successful", 200)
+
+# SettingsPlugin
+    def get_settings_defaults(self):
+        return dict(bed_temp="50",
+        	print_temp="200")
+
+# TemplatePlugin
+    def get_template_vars(self):
+        return dict(
+        	bed_temp=self._settings.get(["bed_temp"]),
+        	print_temp=self._settings.get(["print_temp"]))
+
+    def get_template_configs(self):
+        return [
+            dict(type="settings", custom_bindings=False),
+        ]
+
+# AssetPlugin
+    def get_assets(self):
+     	return dict(
+         	js=["js/material_settings.js"]
+    )
+
+# Data Persistence
     def _writeMaterialsFile(self, materials):
         try:
             import yaml
@@ -41,29 +104,7 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
                     return materials_dict
         return dict()
 
-    def on_api_get(self, request):
-        materials = self._getMaterialsDict()
-        return flask.jsonify(materials)
-
-    def get_settings_defaults(self):
-        return dict(bed_temp="50",
-        	print_temp="200")
-
-    def get_template_vars(self):
-        return dict(
-        	bed_temp=self._settings.get(["bed_temp"]),
-        	print_temp=self._settings.get(["print_temp"]))
-
-    def get_template_configs(self):
-        return [
-            dict(type="settings", custom_bindings=False),
-        ]
-
-    def get_assets(self):
-     	return dict(
-         	js=["js/material_settings.js"]
-    )
-
+# Gcode replacement
     def set_bed_temp(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
     	if cmd and cmd[:10] == "M190 S50.5":
             t = self._settings.get(["bed_temp"])
