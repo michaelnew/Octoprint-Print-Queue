@@ -12,6 +12,26 @@ $(function() {
         self.bedTemp = ko.observable();
         self.printTemp = ko.observable();
 
+        self.printContinuously = ko.observable();
+        self.printContinuously.subscribe(function(newValue) {
+            self.updatePrintContinuously(newValue);
+        });
+
+        self.updatePrintContinuously = function(continuous) {
+            $.ajax({
+                url: "plugin/material_settings/updateprintcontinuously", 
+                type: "POST",
+                dataType: "json",
+                headers: {
+                    "X-Api-Key":UI_API_KEY,
+                },
+                data: {
+                    print_continuously: continuous,
+                },
+                success: self.postResponse
+            });
+        }
+
         self.requestData = function() {
             $.ajax({
                 url: "plugin/material_settings/materialget",
@@ -34,15 +54,11 @@ $(function() {
                         print_temp: pTemp},
                 success: self.postResponse
             });
-            // $.post("api/plugin/material_settings", {bed_temp: "123", print_temp: "213"}, function(result){
-            //     self.postResponse
-            // });
         }
 
         self.postResponse = function() {
             console.log('MSL: post success');
         };
-
 
         self.fromResponse = function(data) {
             self.bedTemp(data["bed_temp"]);
@@ -54,6 +70,19 @@ $(function() {
         self.updateMaterial = function() {
             self.postData(self.bedTemp, self.printTemp);
         }
+
+        self.runTest = function() {
+            $.ajax({
+                url: "plugin/material_settings/runtest", 
+                type: "POST",
+                dataType: "json",
+                headers: {
+                    "X-Api-Key":UI_API_KEY,
+                },
+                success: self.postResponse
+            });
+        }
+
         // TESTING
 
         // this will hold the URL currently displayed by the iframe
