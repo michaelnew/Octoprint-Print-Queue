@@ -11,25 +11,24 @@ $(function() {
         self.settings = parameters[0];
         self.bedTemp = ko.observable();
         self.printTemp = ko.observable();
+        self.printNumber = ko.observable();
+        self.printNumber(0);
 
-        self.printContinuously = ko.observable();
-        self.printContinuously.subscribe(function(newValue) {
-            self.updatePrintContinuously(newValue);
-        });
-
-        self.updatePrintContinuously = function(continuous) {
-            $.ajax({
-                url: "plugin/material_settings/updateprintcontinuously", 
-                type: "POST",
-                dataType: "json",
-                headers: {
-                    "X-Api-Key":UI_API_KEY,
-                },
-                data: {
-                    print_continuously: continuous,
-                },
-                success: self.postResponse
-            });
+        self.printContinuously = function() {
+            if (parseInt(self.printNumber()) > 0) {
+                $.ajax({
+                    url: "plugin/material_settings/printcontinuously",
+                    type: "POST",
+                    dataType: "json",
+                    headers: {
+                        "X-Api-Key":UI_API_KEY,
+                    },
+                    data: {
+                        amount: self.printNumber,
+                    },
+                    success: self.postResponse
+                });
+            }
         }
 
         self.requestData = function() {
@@ -41,9 +40,10 @@ $(function() {
             });
         };
 
-        self.postData = function(bTemp, pTemp) {
+        self.postData = function(bTemp, pTemp) 
+        {
             $.ajax({
-                url: "plugin/material_settings/materialset", 
+                url: "plugin/material_settings/materialset",
                 type: "POST",
                 dataType: "json",
                 headers: {
@@ -68,7 +68,7 @@ $(function() {
 
 
         self.updateMaterial = function() {
-            self.postData(self.bedTemp, self.printTemp);
+            self.postData(self.bedTemp(), self.printTemp());
         }
 
         self.runTest = function() {

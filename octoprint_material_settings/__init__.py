@@ -14,6 +14,8 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
     octoprint.plugin.BlueprintPlugin,
     octoprint.plugin.EventHandlerPlugin):
 
+    printqueue = 0
+
 # StartupPlugin
     def on_after_startup(self):
         self._materials_file_path = os.path.join(self.get_plugin_data_folder(), "materials.yaml")
@@ -41,13 +43,16 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
         self._logger.info("MSL: octoprint" + ', '.join(dir(octoprint)))
         self._logger.info("MSL: octoprint.printer " + ', '.join(dir(octoprint.printer)))
         self._logger.info("MSL: self " + ', '.join(dir(self)))
-        self._printer.start_print()
+        # self._printer.start_print()
         return flask.make_response("POST successful", 200)
 
-    @octoprint.plugin.BlueprintPlugin.route("/updateprintcontinuously", methods=["POST"])
-    def updatePrintContinuously(self):
+    @octoprint.plugin.BlueprintPlugin.route("/printcontinuously", methods=["POST"])
+    def printContinuously(self):
         self._logger.info("MSL: successfully called print continuously method")
-
+        self.printqueue = int(flask.request.values["amount"])
+        self._logger.info("MSL: printing copies: " + str(self.printqueue))
+        if self.printqueue > 0:
+            self._printer.start_print()
         return flask.make_response("POST successful", 200)
 
 # SettingsPlugin
@@ -102,9 +107,9 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
         return result_dict
 
     def print_completion_script(self, comm, script_type, script_name, *args, **kwargs):
-        if script_type == "gcode" and script_name == "afterPrintDone":
+        if script_type == "gcode" and script_name == "afterPrintDone" and self.printqueue > 0:
             self._logger.info("MSL: script type matched. prepending gcode")
-            prefix = "M104 S0\nM140 S0\nG1 Y215 F3000\nG1 X107 F3000\nM106 S255\nG1 Z12\nM190 R29\nG1 Y0 F3000\nG1 Y215 F8000"
+            prefix = "M104 S0\nM140 S0\nG1 Y215 F3000\nG1 X107 F3000\nM106 S255\nG1 Z12\nM190 R27\nG1 Y0 F3000\nG1 Y215 F8000"
             postfix = None
             return prefix, postfix
         else:
@@ -139,9 +144,10 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
 
     # Event Handling
     def on_event(self, event, payload):
-        self._logger.info("MSL: on_event called")
         if event == "PrintDone":
-            self._printer.start_print()
+            if self.printqueue > 0:
+                self.printqueue -= 1
+                if self.printqueue > 0: self._printer.start_print()
         return
 
 __plugin_name__ = "Material Settings"

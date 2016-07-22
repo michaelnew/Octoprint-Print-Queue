@@ -23,7 +23,16 @@
         <button class="btn" data-bind="click: runTest">{{ _('TEST') }}</button>
     </div>
     <h1>{{ _('Continous Printing') }}</h1>
-    <div class="control-group" title="{{ _('Interval in which to poll for the SD printing status information from the printer while printing') }}">
+    <label class="control-label">{{ _('Print Number') }}</label>
+    <div class="controls">
+        <div class="input-append">
+            <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: printNumber">
+        </div>
+    </div>
+    <br/>
+    <button class="btn btn-primary" data-bind="click: printContinuously">{{ _('Print') }}</button>
+
+<!--     <div class="control-group" title="{{ _('Interval in which to poll for the SD printing status information from the printer while printing') }}">
         <input type="checkbox" data-bind="checked: printContinuously"> {{ _('Print Continuously') }}
     </div>
-</form>
+ --></form>
