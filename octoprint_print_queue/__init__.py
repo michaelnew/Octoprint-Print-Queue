@@ -7,7 +7,7 @@ from octoprint.server import printer, NO_CONTENT
 import flask
 import os
 
-class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
+class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
     octoprint.plugin.TemplatePlugin,
     octoprint.plugin.SettingsPlugin,
     octoprint.plugin.AssetPlugin,
@@ -150,10 +150,10 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
                 if self.printqueue > 0: self._printer.start_print()
         return
 
-__plugin_name__ = "Material Settings"
+__plugin_name__ = "Print Queue"
 def __plugin_load__():
     global __plugin_implementation__
-    __plugin_implementation__ = MaterialSettingsPlugin()
+    __plugin_implementation__ = PrintQueuePlugin()
 
     global __plugin_hooks__
     __plugin_hooks__ = {
