@@ -10,6 +10,7 @@ $(function() {
 
         self.settings = parameters[0];
         self.bedTemp = ko.observable();
+        self.bedClearScript = ko.observable();
         self.printTemp = ko.observable();
         self.printNumber = ko.observable();
         self.printNumber(0);
@@ -40,7 +41,7 @@ $(function() {
             });
         };
 
-        self.postData = function(bTemp, pTemp) 
+        self.postData = function(bTemp, pTemp, bScript) 
         {
             $.ajax({
                 url: "plugin/material_settings/materialset",
@@ -51,7 +52,9 @@ $(function() {
                 },
                 data: {
                         bed_temp: bTemp,
-                        print_temp: pTemp},
+                        print_temp: pTemp,
+                        bed_clear_script: bScript
+                    },
                 success: self.postResponse
             });
         }
@@ -63,12 +66,13 @@ $(function() {
         self.fromResponse = function(data) {
             self.bedTemp(data["bed_temp"]);
             self.printTemp(data["print_temp"]);
-            console.log('Callback - data: ' + data);
+            self.bedClearScript(data["bed_clear_script"])
+            console.log('Callback - data: ' + data["bed_clear_script"]);
         };
 
-
         self.updateMaterial = function() {
-            self.postData(self.bedTemp(), self.printTemp());
+            console.log('posting bed clear script: ' + self.bedClearScript());
+            self.postData(self.bedTemp(), self.printTemp(), self.bedClearScript());
         }
 
         self.runTest = function() {

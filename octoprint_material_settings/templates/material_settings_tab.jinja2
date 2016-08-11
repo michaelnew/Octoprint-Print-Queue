@@ -20,13 +20,24 @@
     </div>
     <div>
         <button class="btn" data-bind="click: updateMaterial">{{ _('Update') }}</button>
-        <button class="btn" data-bind="click: runTest">{{ _('TEST') }}</button>
+        <!-- <button class="btn" data-bind="click: runTest">{{ _('TEST') }}</button> -->
     </div>
     <h1>{{ _('Continous Printing') }}</h1>
-    <label class="control-label">{{ _('Print Number') }}</label>
-    <div class="controls">
-        <div class="input-append">
-            <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: printNumber">
+    <div>
+        <label class="control-label">{{ _('Print Quantity') }}</label>
+        <div class="controls">
+            <div class="input">
+                <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: printNumber">
+            </div>
+        </div>
+    </div>
+    <br/>
+    <div>
+        <label class="control-label">{{ _('Bed Clearing Script') }}</label>
+        <div class="controls">
+            <div class="input">
+                <textarea rows="8" class="block" data-bind="value: bedClearScript"></textarea>
+            </div>
         </div>
     </div>
     <br/>

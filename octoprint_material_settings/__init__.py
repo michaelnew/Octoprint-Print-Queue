@@ -33,6 +33,7 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
         materials = self._getMaterialsDict()
         materials["bed_temp"] = flask.request.values["bed_temp"];
         materials["print_temp"] = flask.request.values["print_temp"];
+        materials["bed_clear_script"] = flask.request.values["bed_clear_script"];
         self._writeMaterialsFile(materials)
         return flask.make_response("POST successful", 200)
 
@@ -108,8 +109,7 @@ class MaterialSettingsPlugin(octoprint.plugin.StartupPlugin,
 
     def print_completion_script(self, comm, script_type, script_name, *args, **kwargs):
         if script_type == "gcode" and script_name == "afterPrintDone" and self.printqueue > 0:
-            self._logger.info("MSL: script type matched. prepending gcode")
-            prefix = "M104 S0\nM140 S0\nG1 Y215 F3000\nG1 X107 F3000\nM106 S255\nG1 Z12\nM190 R27\nG1 Y0 F3000\nG1 Y215 F8000"
+            prefix = self._materials_dict["bed_clear_script"]
             postfix = None
             return prefix, postfix
         else:
