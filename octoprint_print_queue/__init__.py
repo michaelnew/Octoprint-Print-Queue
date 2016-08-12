@@ -18,8 +18,8 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
 
 # StartupPlugin
     def on_after_startup(self):
-        self._materials_file_path = os.path.join(self.get_plugin_data_folder(), "print_queue.yaml")
-        self._materials_dict = None
+        self._print_queue_file_path = os.path.join(self.get_plugin_data_folder(), "print_queue.yaml")
+        self._configuration_dict = None
         self._getMaterialsDict()
 
 # BluePrintPlugin (api requests)
@@ -32,24 +32,24 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
     def setMaterialsData(self):
         materials = self._getMaterialsDict()
         materials["bed_clear_script"] = flask.request.values["bed_clear_script"];
-        self._writeMaterialsFile(materials)
+        self._writeConfigurationFile(materials)
         return flask.make_response("POST successful", 200)
 
     @octoprint.plugin.BlueprintPlugin.route("/runtest", methods=["POST"])
     def runTest(self):
-        self._logger.info("MSL: successfully called test method")
+        self._logger.info("PQ: successfully called test method")
         # octoprint.printer.start_print()
-        self._logger.info("MSL: octoprint" + ', '.join(dir(octoprint)))
-        self._logger.info("MSL: octoprint.printer " + ', '.join(dir(octoprint.printer)))
-        self._logger.info("MSL: self " + ', '.join(dir(self)))
+        self._logger.info("PQ: octoprint" + ', '.join(dir(octoprint)))
+        self._logger.info("PQ: octoprint.printer " + ', '.join(dir(octoprint.printer)))
+        self._logger.info("PQ: self " + ', '.join(dir(self)))
         # self._printer.start_print()
         return flask.make_response("POST successful", 200)
 
     @octoprint.plugin.BlueprintPlugin.route("/printcontinuously", methods=["POST"])
     def printContinuously(self):
-        self._logger.info("MSL: successfully called print continuously method")
+        self._logger.info("PQ: successfully called print continuously method")
         self.printqueue = int(flask.request.values["amount"])
-        self._logger.info("MSL: printing copies: " + str(self.printqueue))
+        self._logger.info("PQ: printing copies: " + str(self.printqueue))
         if self.printqueue > 0:
             self._printer.start_print()
         return flask.make_response("POST successful", 200)
@@ -77,37 +77,37 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
     )
 
 # Data Persistence
-    def _writeMaterialsFile(self, materials):
+    def _writeConfigurationFile(self, config):
         try:
             import yaml
             from octoprint.util import atomic_write
-            with atomic_write(self._materials_file_path) as f:
-                yaml.safe_dump(materials, stream=f, default_flow_style=False, indent="  ", allow_unicode=True)
+            with atomic_write(self._print_queue_file_path) as f:
+                yaml.safe_dump(config, stream=f, default_flow_style=False, indent="  ", allow_unicode=True)
         except:
-            self._logger.info("MSL: error writing materials file")
+            self._logger.info("PQ: error writing configuration file")
         else:
-            self._materials_dict = materials
+            self._configuration_dict = config
 
     def _getMaterialsDict(self):
         result_dict = None
-        if os.path.exists(self._materials_file_path):
-            with open(self._materials_file_path, "r") as f:
+        if os.path.exists(self._print_queue_file_path):
+            with open(self._print_queue_file_path, "r") as f:
                 try:
                     import yaml
                     result_dict = yaml.safe_load(f)
                 except:
-                    self._logger.info("MSL: error loading materials file")
+                    self._logger.info("PQ: error loading configuration file")
                 else:
                     if not result_dict:
                         result_dict = dict()
         else: 
             result_dict = dict()
-        self._materials_dict = result_dict
+        self._configuration_dict = result_dict
         return result_dict
 
     def print_completion_script(self, comm, script_type, script_name, *args, **kwargs):
         if script_type == "gcode" and script_name == "afterPrintDone" and self.printqueue > 0:
-            prefix = self._materials_dict["bed_clear_script"]
+            prefix = self._configuration_dict["bed_clear_script"]
             postfix = None
             return prefix, postfix
         else:
