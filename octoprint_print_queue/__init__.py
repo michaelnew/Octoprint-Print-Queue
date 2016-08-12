@@ -18,21 +18,19 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
 
 # StartupPlugin
     def on_after_startup(self):
-        self._materials_file_path = os.path.join(self.get_plugin_data_folder(), "materials.yaml")
+        self._materials_file_path = os.path.join(self.get_plugin_data_folder(), "print_queue.yaml")
         self._materials_dict = None
         self._getMaterialsDict()
 
 # BluePrintPlugin (api requests)
-    @octoprint.plugin.BlueprintPlugin.route("/materialget", methods=["GET"])
+    @octoprint.plugin.BlueprintPlugin.route("/scriptget", methods=["GET"])
     def getMaterialsData(self):
         materials = self._getMaterialsDict()
         return flask.jsonify(materials)
 
-    @octoprint.plugin.BlueprintPlugin.route("/materialset", methods=["POST"])
+    @octoprint.plugin.BlueprintPlugin.route("/scriptset", methods=["POST"])
     def setMaterialsData(self):
         materials = self._getMaterialsDict()
-        materials["bed_temp"] = flask.request.values["bed_temp"];
-        materials["print_temp"] = flask.request.values["print_temp"];
         materials["bed_clear_script"] = flask.request.values["bed_clear_script"];
         self._writeMaterialsFile(materials)
         return flask.make_response("POST successful", 200)
@@ -75,7 +73,7 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
 # AssetPlugin
     def get_assets(self):
         return dict(
-            js=["js/material_settings.js"]
+            js=["js/print_queue.js"]
     )
 
 # Data Persistence
@@ -115,33 +113,6 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
         else:
             return None
 
-# Gcode replacement
-    def set_bed_temp(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
-        bTempKey = self._settings.get(["bed_temp"])
-        pTempKey = self._settings.get(["print_temp"])
-
-        if cmd:
-            if cmd[:8] == ("M190 S" + bTempKey):
-                t = self._materials_dict["bed_temp"]
-                if t and t != "":
-                    cmd = "M190 S" + t
-                    return cmd
-            if cmd[:8] == ("M140 S" + bTempKey):
-                t = self._materials_dict["bed_temp"]
-                if t and t != "":
-                    cmd = "M140 S" + t
-                    return cmd
-            if cmd[:9] == ("M104 S" + pTempKey):
-                t = self._materials_dict["print_temp"]
-                if t and t != "":
-                    cmd = "M104 S" + t
-                    return cmd
-            if cmd[:9] == ("M109 S" + pTempKey):
-                t = self._materials_dict["print_temp"]
-                if t and t != "":
-                    cmd = "M109 S" + t
-                    return cmd
-
     # Event Handling
     def on_event(self, event, payload):
         if event == "PrintDone":
@@ -157,6 +128,5 @@ def __plugin_load__():
 
     global __plugin_hooks__
     __plugin_hooks__ = {
-        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.set_bed_temp,
         "octoprint.comm.protocol.scripts": __plugin_implementation__.print_completion_script,
     }

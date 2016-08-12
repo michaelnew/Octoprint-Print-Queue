@@ -1,0 +1,23 @@
+<form class="form-horizontal">
+    <h1>{{ _('Continous Printing') }}</h1>
+    <div>
+        <label class="control-label">{{ _('Print Quantity') }}</label>
+        <div class="controls">
+            <div class="input">
+                <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: printNumber">
+            </div>
+        </div>
+    </div>
+    <br/>
+    <div>
+        <label class="control-label">{{ _('Bed Clearing Script') }}</label>
+        <div class="controls">
+            <div class="input">
+                <textarea rows="8" class="block" data-bind="value: bedClearScript"></textarea>
+            </div>
+        </div>
+    </div>
+    <br/>
+    <button class="btn btn-primary" data-bind="click: printContinuously">{{ _('Print') }}</button>
+    <button class="btn" data-bind="click: update">{{ _('Update') }}</button>
+</form>

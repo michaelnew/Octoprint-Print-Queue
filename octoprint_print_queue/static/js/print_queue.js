@@ -1,24 +1,22 @@
 /*
- * View model for OctoPrint-Material-Settings
+ * View model for OctoPrint-Print-Queue
  *
  * Author: Michael New
  * License: AGPLv3
  */
 $(function() {
-    function MaterialSettingsViewModel(parameters) {
+    function PrintQueueViewModel(parameters) {
         var self = this;
 
         self.settings = parameters[0];
-        self.bedTemp = ko.observable();
         self.bedClearScript = ko.observable();
-        self.printTemp = ko.observable();
         self.printNumber = ko.observable();
         self.printNumber(0);
 
         self.printContinuously = function() {
             if (parseInt(self.printNumber()) > 0) {
                 $.ajax({
-                    url: "plugin/material_settings/printcontinuously",
+                    url: "plugin/print_queue/printcontinuously",
                     type: "POST",
                     dataType: "json",
                     headers: {
@@ -34,25 +32,23 @@ $(function() {
 
         self.requestData = function() {
             $.ajax({
-                url: "plugin/material_settings/materialget",
+                url: "plugin/print_queue/scriptget",
                 type: "GET",
                 dataType: "json",
                 success: self.fromResponse
             });
         };
 
-        self.postData = function(bTemp, pTemp, bScript) 
+        self.postData = function(bScript) 
         {
             $.ajax({
-                url: "plugin/material_settings/materialset",
+                url: "plugin/print_queue/scriptset",
                 type: "POST",
                 dataType: "json",
                 headers: {
                     "X-Api-Key":UI_API_KEY,
                 },
                 data: {
-                        bed_temp: bTemp,
-                        print_temp: pTemp,
                         bed_clear_script: bScript
                     },
                 success: self.postResponse
@@ -64,20 +60,18 @@ $(function() {
         };
 
         self.fromResponse = function(data) {
-            self.bedTemp(data["bed_temp"]);
-            self.printTemp(data["print_temp"]);
             self.bedClearScript(data["bed_clear_script"])
             console.log('Callback - data: ' + data["bed_clear_script"]);
         };
 
-        self.updateMaterial = function() {
+        self.update = function() {
             console.log('posting bed clear script: ' + self.bedClearScript());
-            self.postData(self.bedTemp(), self.printTemp(), self.bedClearScript());
+            self.postData(self.bedClearScript());
         }
 
         self.runTest = function() {
             $.ajax({
-                url: "plugin/material_settings/runtest", 
+                url: "plugin/print_queue/runtest", 
                 type: "POST",
                 dataType: "json",
                 headers: {
@@ -118,7 +112,7 @@ $(function() {
     // information to the global variable OCTOPRINT_VIEWMODELS
     OCTOPRINT_VIEWMODELS.push([
         // This is the constructor to call for instantiating the plugin
-        MaterialSettingsViewModel,
+        PrintQueueViewModel,
 
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
@@ -126,6 +120,6 @@ $(function() {
         ["settingsViewModel"],
 
         // Finally, this is the list of selectors for all elements we want this view model to be bound to.
-        ["#tab_plugin_material_settings"]
+        ["#tab_plugin_print_queue"]
     ]);
 });
