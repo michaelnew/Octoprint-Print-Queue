@@ -115,11 +115,15 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
 
     # Event Handling
     def on_event(self, event, payload):
-        if event == "PrintDone":
-            if self.printqueue > 0:
+        self._logger.info("on_event fired: " + event)
+        if event == "FileSelected":
+            self._logger.info(payload)
+        if event == "PrinterStateChanged": 
+            if self._printer.get_state_string() == "Operational" and self.printqueue > 0:
+                self._logger.info("attempting to start print")
                 self.printqueue -= 1
-                if self.printqueue > 0: self._printer.start_print()
-        return
+                #self._printer.select_file(path="test_scripts/single_move_test_no_extrusion.gcode", sd=True, printAfterSelect=True)
+                self._printer.start_print()
 
 __plugin_name__ = "Print Queue"
 def __plugin_load__():
