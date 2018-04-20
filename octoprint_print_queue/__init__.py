@@ -49,16 +49,12 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/printcontinuously", methods=["POST"])
     def printContinuously(self):
-        self._logger.info("PQ: successfully called print continuously method")
         self.printqueue = []
         for v in flask.request.form:
             j = json.loads(v)
             for p in j:
-                self._logger.info(p)
                 self.printqueue += [p]
 
-        self._logger.info(self.printqueue)
-        self._logger.info(self.printqueue[0])
         f = self.uploads_dir + self.printqueue[0]
         self._logger.info("PQ: attempting to print file: " + f)
         self._printer.select_file(f, False, True)
@@ -127,8 +123,7 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
             self.selected_file = payload["path"]
         if event == "PrinterStateChanged":
             if self._printer.get_state_string() == "Operational" and len(self.printqueue) > 0:
-                self._printer.select_file(self.uploads_dir + self.printqueue[0], False, False)
-                self._printer.start_print()
+                self._printer.select_file(self.uploads_dir + self.printqueue[0], False, True)
                 self.printqueue.pop(0)
         return
 

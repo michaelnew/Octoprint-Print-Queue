@@ -18,7 +18,7 @@ plugin_version = "0.1.0"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
-plugin_description = """Enables continuous printing by printing an object, clearing the bed, and printing another."""
+plugin_description = """Enables continuous printing by printing an object, clearing the bed, and then printing another."""
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
 plugin_author = "Michael New"
