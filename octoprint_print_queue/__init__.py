@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 import octoprint.plugin
+import octoprint.filemanager
 from pprint import pprint
 from octoprint.server import printer, NO_CONTENT
 import flask
@@ -14,7 +15,9 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
     octoprint.plugin.BlueprintPlugin,
     octoprint.plugin.EventHandlerPlugin):
 
-    printqueue = 0
+    printqueue = []
+    selected_file = ""
+    uploads_dir = "/home/pi/.octoprint/uploads/"
 
 # StartupPlugin
     def on_after_startup(self):
@@ -35,23 +38,25 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
         self._writeConfigurationFile(materials)
         return flask.make_response("POST successful", 200)
 
-    @octoprint.plugin.BlueprintPlugin.route("/runtest", methods=["POST"])
-    def runTest(self):
-        self._logger.info("PQ: successfully called test method")
-        # octoprint.printer.start_print()
-        self._logger.info("PQ: octoprint" + ', '.join(dir(octoprint)))
-        self._logger.info("PQ: octoprint.printer " + ', '.join(dir(octoprint.printer)))
-        self._logger.info("PQ: self " + ', '.join(dir(self)))
-        # self._printer.start_print()
+    @octoprint.plugin.BlueprintPlugin.route("/addselectedfile", methods=["POST"])
+    def addSelectedFile(self):
+        self._logger.info("PQ: adding selected file: " + self.selected_file)
+        self.printqueue += [self.selected_file]
+        self._logger.info("PQ: print_queue: " + str(self.printqueue))
+        self._printer.unselect_file()
+        self.selected_file = ""
+        response = flask.make_response("POST successful", 200)
+        response.
+        
         return flask.make_response("POST successful", 200)
 
     @octoprint.plugin.BlueprintPlugin.route("/printcontinuously", methods=["POST"])
     def printContinuously(self):
         self._logger.info("PQ: successfully called print continuously method")
-        self.printqueue = int(flask.request.values["amount"])
-        self._logger.info("PQ: printing copies: " + str(self.printqueue))
-        if self.printqueue > 0:
-            self._printer.start_print()
+        f = self.uploads_dir + self.printqueue[0]
+        self._logger.info("PQ: attempting to print file: " + f)
+        self._printer.select_file(f, False, True)
+        self.printqueue.pop(0)
         return flask.make_response("POST successful", 200)
 
 # SettingsPlugin
@@ -106,7 +111,7 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
         return result_dict
 
     def print_completion_script(self, comm, script_type, script_name, *args, **kwargs):
-        if script_type == "gcode" and script_name == "afterPrintDone" and self.printqueue > 0:
+        if script_type == "gcode" and script_name == "afterPrintDone" and len(self.printqueue) > 0:
             prefix = self._configuration_dict["bed_clear_script"]
             postfix = None
             return prefix, postfix
@@ -118,12 +123,13 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
         self._logger.info("on_event fired: " + event)
         if event == "FileSelected":
             self._logger.info(payload)
-        if event == "PrinterStateChanged": 
-            if self._printer.get_state_string() == "Operational" and self.printqueue > 0:
-                self._logger.info("attempting to start print")
-                self.printqueue -= 1
-                #self._printer.select_file(path="test_scripts/single_move_test_no_extrusion.gcode", sd=True, printAfterSelect=True)
+            self.selected_file = payload["path"]
+        if event == "PrinterStateChanged":
+            if self._printer.get_state_string() == "Operational" and len(self.printqueue) > 0:
+                self._printer.select_file(self.uploads_dir + self.printqueue[0], False, False)
                 self._printer.start_print()
+                self.printqueue.pop(0)
+        return
 
 __plugin_name__ = "Print Queue"
 def __plugin_load__():

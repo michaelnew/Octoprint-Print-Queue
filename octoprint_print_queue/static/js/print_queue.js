@@ -10,8 +10,8 @@ $(function() {
 
         self.settings = parameters[0];
         self.bedClearScript = ko.observable();
-        self.printNumber = ko.observable();
-        self.printNumber(0);
+        self.fileName = ko.observable();
+	self.queuedPrints = ko.observableArray([]);
 
         self.printContinuously = function() {
             if (parseInt(self.printNumber()) > 0) {
@@ -23,12 +23,37 @@ $(function() {
                         "X-Api-Key":UI_API_KEY,
                     },
                     data: {
-                        amount: self.printNumber,
+			prints: self.queuedPrints,
                     },
                     success: self.postResponse
                 });
             }
         }
+
+        self.changePrintNumber = function(data) {
+	    console.log(data);
+        }
+
+        self.addSelectedFile = function() {
+	    $.ajax({
+	        url: "plugin/print_queue/addselectedfile",
+	        type: "GET",
+	        dataType: "json",
+	        headers: {
+		    "X-Api-Key":UI_API_KEY,
+	        },
+		success: self.addFileResponse
+	    });
+        }
+
+        self.addFileResponse = function(data) {
+            console.log('PQ: add file success');
+            console.log(data);
+	    let f = data["filename"]
+	    if (f) {
+                self.queuedPrints.push({fileName: f, printNumber: 1})
+	    }
+        };
 
         self.requestData = function() {
             $.ajax({
@@ -69,36 +94,6 @@ $(function() {
             self.postData(self.bedClearScript());
         }
 
-        self.runTest = function() {
-            $.ajax({
-                url: "plugin/print_queue/runtest", 
-                type: "POST",
-                dataType: "json",
-                headers: {
-                    "X-Api-Key":UI_API_KEY,
-                },
-                success: self.postResponse
-            });
-        }
-
-        // TESTING
-
-        // this will hold the URL currently displayed by the iframe
-        // self.currentUrl = ko.observable();
-
-        // this will hold the URL entered in the text field
-        // self.newUrl = ko.observable();
-
-        // this will be called when the user clicks the "Go" button and set the iframe's URL to
-        // the entered URL
-        // self.goToUrl = function() {
-        //     self.currentUrl(self.newUrl());
-        // };
-
-        // This will get called before the HelloWorldViewModel gets bound to the DOM, but after its
-        // dependencies have already been initialized. It is especially guaranteed that this method
-        // gets called _after_ the settings have been retrieved from the OctoPrint backend and thus
-        // the SettingsViewModel been properly populated.
 
         self.onBeforeBinding = function() {
             // self.newUrl(self.settings.settings.plugins.helloworld.url());
