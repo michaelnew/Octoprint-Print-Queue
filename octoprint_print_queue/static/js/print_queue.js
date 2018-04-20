@@ -34,11 +34,7 @@ $(function() {
 	        headers: {
 	            "X-Api-Key":UI_API_KEY,
 	        },
-	        //data: self.createPrintQueueString(),
 	        data: JSON.stringify(self.createPrintQueueString()),
-	        //data: {
-		//    prints: self.createPrintQueueString()
-		//},
 	        success: self.postResponse
 	    });
         }
@@ -48,7 +44,7 @@ $(function() {
         }
 
         self.removeFile = function(file) {
-	    self.queuedPrint.remove(file);
+	    self.queuedPrints.remove(file);
         }
 
         self.addSelectedFile = function() {
@@ -111,12 +107,8 @@ $(function() {
             self.postData(self.bedClearScript());
         }
 
-
         self.onBeforeBinding = function() {
-            // self.newUrl(self.settings.settings.plugins.helloworld.url());
-            // self.goToUrl();
             self.requestData();
-            // self.testBedTemp = ko.observable(self.settings.settings.plugins.material_settings.bed_temp());
         }
     }
 
