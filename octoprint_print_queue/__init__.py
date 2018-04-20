@@ -2,11 +2,9 @@
 from __future__ import absolute_import
 
 import octoprint.plugin
-import octoprint.filemanager
 from pprint import pprint
 from octoprint.server import printer, NO_CONTENT
-import flask
-import json
+import flask, json
 import os
 
 class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
@@ -24,19 +22,18 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
     def on_after_startup(self):
         self._print_queue_file_path = os.path.join(self.get_plugin_data_folder(), "print_queue.yaml")
         self._configuration_dict = None
-        self._getMaterialsDict()
+        self._getConfigurationFile()
 
 # BluePrintPlugin (api requests)
     @octoprint.plugin.BlueprintPlugin.route("/scriptget", methods=["GET"])
     def getMaterialsData(self):
-        materials = self._getMaterialsDict()
-        return flask.jsonify(materials)
+        return flask.jsonify(self._getConfigurationFile())
 
     @octoprint.plugin.BlueprintPlugin.route("/scriptset", methods=["POST"])
     def setMaterialsData(self):
-        materials = self._getMaterialsDict()
-        materials["bed_clear_script"] = flask.request.values["bed_clear_script"];
-        self._writeConfigurationFile(materials)
+        config = self._getConfigurationFile()
+        config["bed_clear_script"] = flask.request.values["bed_clear_script"];
+        self._writeConfigurationFile(config)
         return flask.make_response("POST successful", 200)
 
     @octoprint.plugin.BlueprintPlugin.route("/addselectedfile", methods=["GET"])
@@ -56,7 +53,7 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
                 self.printqueue += [p]
 
         f = self.uploads_dir + self.printqueue[0]
-        self._logger.info("PQ: attempting to print file: " + f)
+        self._logger.info("PQ: attempting to select and print file: " + f)
         self._printer.select_file(f, False, True)
         self.printqueue.pop(0)
         return flask.make_response("POST successful", 200)
@@ -90,7 +87,7 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
         else:
             self._configuration_dict = config
 
-    def _getMaterialsDict(self):
+    def _getConfigurationFile(self):
         result_dict = None
         if os.path.exists(self._print_queue_file_path):
             with open(self._print_queue_file_path, "r") as f:
