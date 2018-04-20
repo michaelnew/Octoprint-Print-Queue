@@ -6,6 +6,7 @@ import octoprint.filemanager
 from pprint import pprint
 from octoprint.server import printer, NO_CONTENT
 import flask
+import json
 import os
 
 class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
@@ -38,31 +39,31 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
         self._writeConfigurationFile(materials)
         return flask.make_response("POST successful", 200)
 
-    @octoprint.plugin.BlueprintPlugin.route("/addselectedfile", methods=["POST"])
+    @octoprint.plugin.BlueprintPlugin.route("/addselectedfile", methods=["GET"])
     def addSelectedFile(self):
         self._logger.info("PQ: adding selected file: " + self.selected_file)
-        self.printqueue += [self.selected_file]
-        self._logger.info("PQ: print_queue: " + str(self.printqueue))
         self._printer.unselect_file()
+        f = self.selected_file
         self.selected_file = ""
-        response = flask.make_response("POST successful", 200)
-        response.
-        
-        return flask.make_response("POST successful", 200)
+        return flask.jsonify(filename=f)
 
     @octoprint.plugin.BlueprintPlugin.route("/printcontinuously", methods=["POST"])
     def printContinuously(self):
         self._logger.info("PQ: successfully called print continuously method")
+        self.printqueue = []
+        for v in flask.request.form:
+            j = json.loads(v)
+            for p in j:
+                self._logger.info(p)
+                self.printqueue += [p]
+
+        self._logger.info(self.printqueue)
+        self._logger.info(self.printqueue[0])
         f = self.uploads_dir + self.printqueue[0]
         self._logger.info("PQ: attempting to print file: " + f)
         self._printer.select_file(f, False, True)
         self.printqueue.pop(0)
         return flask.make_response("POST successful", 200)
-
-# SettingsPlugin
-    def get_settings_defaults(self):
-        return dict(bed_temp="50",
-            print_temp="200")
 
 # TemplatePlugin
     def get_template_vars(self):

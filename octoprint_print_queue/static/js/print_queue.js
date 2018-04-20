@@ -4,34 +4,51 @@
  * Author: Michael New
  * License: AGPLv3
  */
+
 $(function() {
     function PrintQueueViewModel(parameters) {
         var self = this;
 
         self.settings = parameters[0];
         self.bedClearScript = ko.observable();
-        self.fileName = ko.observable();
 	self.queuedPrints = ko.observableArray([]);
 
-        self.printContinuously = function() {
-            if (parseInt(self.printNumber()) > 0) {
-                $.ajax({
-                    url: "plugin/print_queue/printcontinuously",
-                    type: "POST",
-                    dataType: "json",
-                    headers: {
-                        "X-Api-Key":UI_API_KEY,
-                    },
-                    data: {
-			prints: self.queuedPrints,
-                    },
-                    success: self.postResponse
-                });
+	self.createPrintQueueString = function() {
+	    let printList = [];
+	    for (var i = 0; i < self.queuedPrints().length; i++) {
+		let fileName = self.queuedPrints()[i]["fileName"];
+		let count = self.queuedPrints()[i]["printNumber"];
+	    	for (var j = 0; j < count; j++) {
+		    printList.push(fileName);
+		}
             }
+	    return printList;
+	}
+
+        self.printContinuously = function() {
+	    console.log(self.createPrintQueueString());
+	    $.ajax({
+	        url: "plugin/print_queue/printcontinuously",
+	        type: "POST",
+	        dataType: "json",
+	        headers: {
+	            "X-Api-Key":UI_API_KEY,
+	        },
+	        //data: self.createPrintQueueString(),
+	        data: JSON.stringify(self.createPrintQueueString()),
+	        //data: {
+		//    prints: self.createPrintQueueString()
+		//},
+	        success: self.postResponse
+	    });
         }
 
         self.changePrintNumber = function(data) {
 	    console.log(data);
+        }
+
+        self.removeFile = function(file) {
+	    self.queuedPrint.remove(file);
         }
 
         self.addSelectedFile = function() {
