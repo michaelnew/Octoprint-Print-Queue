@@ -22,12 +22,11 @@
     </div>
     <br/>
     <div>
-        <label class="control-label">{{ _('Bed Clearing Script') }}</label>
-        <div class="controls">
+        <h4>{{ _('Bed Clearing Script') }}</h4>
             <div class="input">
                 <textarea rows="8" class="block" data-bind="value: bedClearScript"></textarea>
             </div>
-        </div>
+	    <span class="help-inline">{{ _("This script will be run after every print is completed (it is prepended to the \"After print job completes\" script). It needs to completely clear the print off the bed so that the printer is ready for the next print. Understand that if the bed isn't clear the hotend is going to crash into the previously printed object and quite possibly break your printer. It is highly recommended that you put a pause command (M226, M600, etc.) at the end of the script so you can inspect the bed before resuming and starting the next print. Only remove the pause command if you're extremely confident that the printer can clear itself completely after every print.") }}</span>
     </div>
     <br/>
     <button class="btn btn-primary" data-bind="click: printContinuously">{{ _('Print') }}</button>
