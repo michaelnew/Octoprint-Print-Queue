@@ -1,10 +1,14 @@
 <h2>{{ _('Print Queue') }}</h2>
 <form class="form-horizontal">
+    <div class="row-fluid">
+        <div class="span8"><h5>{{ _('Filename') }}</h5></div>
+        <div class="offset1 span1"><h5>{{ _('Copies') }}</h5></div>
+    </div>
     <div data-bind="foreach: queuedPrints">
         <div class="row-fluid" style="margin-bottom: 5px">
 	    <div class="row-fluid" style="margin-bottom: 5px">
 		<div class="span8">
-		    <input type="text" class="span12 text-left" data-bind="value: fileName">
+		    <input title="i.e. &quot;part.gcode&quot; or &quot;subfolder/part.gcode&quot;" type="text" placeholder="enter a filename" class="span12 text-left" data-bind="value: fileName">
 		</div>
 		<div class="input offset1 span1">
 		    <input type="number" step="any" min="1" class="input-mini text-right" data-bind="value: printNumber">
