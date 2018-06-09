@@ -115,7 +115,9 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
     # Event Handling
     def on_event(self, event, payload):
         self._logger.info("on_event fired: " + event)
+        self._plugin_manager.send_plugin_message(self._identifier, dict(message="printer state changed"))
         if event == "FileSelected":
+            self._plugin_manager.send_plugin_message(self._identifier, dict(message="file_selected",file=payload["path"]))
             self._logger.info(payload)
             self.selected_file = payload["path"]
         if event == "PrinterStateChanged":

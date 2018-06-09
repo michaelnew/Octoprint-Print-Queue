@@ -65,7 +65,9 @@ $(function() {
 	    let f = data["filename"]
 	    if (f) {
                 self.queuedPrints.push({fileName: f, printNumber: 1})
-	    }
+	    } else {
+                self.queuedPrints.push({fileName: "", printNumber: 1})
+		}
         };
 
         self.requestData = function() {
@@ -110,6 +112,21 @@ $(function() {
         self.onBeforeBinding = function() {
             self.requestData();
         }
+
+		self.onDataUpdaterPluginMessage = function(plugin, data) {
+			// if the "add file" field is blank and the user loads a new file
+			// put it's name into the text field
+			if (plugin == "print_queue" && data["message"] == "file_selected") {
+				let l = self.queuedPrints().length;
+				if (l > 0) {
+					let last = self.queuedPrints()[l - 1];
+            		console.log(last["fileName"]);
+					if (last["fileName"] == "") {
+						self.queuedPrints.replace(last, {fileName: data["file"], printNumber: last["printNumber"]})
+					}
+				}
+			}
+		}
     }
 
     // This is how our plugin registers itself with the application, by adding some configuration
