@@ -115,15 +115,20 @@ class PrintQueuePlugin(octoprint.plugin.StartupPlugin,
     # Event Handling
     def on_event(self, event, payload):
         self._logger.info("on_event fired: " + event)
-        self._plugin_manager.send_plugin_message(self._identifier, dict(message="printer state changed"))
         if event == "FileSelected":
             self._plugin_manager.send_plugin_message(self._identifier, dict(message="file_selected",file=payload["path"]))
             self._logger.info(payload)
             self.selected_file = payload["path"]
         if event == "PrinterStateChanged":
-            if self._printer.get_state_string() == "Operational" and len(self.printqueue) > 0:
+            state = self._printer.get_state_id()
+            self._logger.info("printer state: " + state)
+            if state  == "OPERATIONAL" and len(self.printqueue) > 0:
                 self._printer.select_file(self.uploads_dir + self.printqueue[0], False, True)
                 self.printqueue.pop(0)
+            if state == "OFFLINE" or state == "CANCELLING" or state == "CLOSED" or state == "ERROR" or state == "CLOSED_WITH_ERROR":
+                self._logger.info("deleting print queue")
+                self.printqueue = []
+
         return
 
 __plugin_name__ = "Print Queue"
