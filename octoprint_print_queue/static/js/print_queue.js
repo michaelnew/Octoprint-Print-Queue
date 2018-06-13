@@ -59,6 +59,18 @@ $(function() {
 	    });
         }
 
+        self.clearSelectedFile = function() {
+            $.ajax({
+                url: "plugin/print_queue/clearselectedfile",
+                type: "POST",
+                dataType: "json",
+                headers: {
+                    "X-Api-Key":UI_API_KEY,
+                },
+                success: self.postResponse
+            });
+        }
+
         self.addFileResponse = function(data) {
             console.log('PQ: add file success');
             console.log(data);
@@ -123,6 +135,7 @@ $(function() {
             		console.log(last["fileName"]);
 					if (last["fileName"] == "") {
 						self.queuedPrints.replace(last, {fileName: data["file"], printNumber: last["printNumber"]})
+						self.clearSelectedFile();
 					}
 				}
 			}
